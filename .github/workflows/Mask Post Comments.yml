@@ -18,8 +18,8 @@ jobs:
         run: |
           if [[ -f topicList.properties ]]; then
             mapfile -t topic_ids < topicOther.properties
-            # 随机选择 20 个 topicID
-            shuf -n 80 topicList.properties > selected_topic_ids.txt
+            # 随机选择 10 个 topicID
+            shuf -n 10 topicList.properties > selected_topic_ids.txt
             mapfile -t selected_topic_ids < selected_topic_ids.txt
             echo "TOPIC_IDS=${selected_topic_ids[*]}" >> $GITHUB_ENV
           else
@@ -32,8 +32,8 @@ jobs:
         run: |
           if [[ -f wwidList.properties ]]; then
             mapfile -t wwids < wwidList.properties
-            # 随机选择 50 个 wwid
-            shuf -n 100 wwidList.properties > selected_wwids.txt
+            # 随机选择 25 个 wwid
+            shuf -n 25 wwidList.properties > selected_wwids.txt
             mapfile -t selected_wwids < selected_wwids.txt
             echo "WWIDS=${selected_wwids[*]}" >> $GITHUB_ENV
           else
