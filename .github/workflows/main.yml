@@ -75,7 +75,7 @@ jobs:
               zhufu=${zhufu_list[$RANDOM % ${#zhufu_list[@]}]}  # 随机获取祝福
 
               content="${tianqi}${zhufu}点赞${time}次"
-              edit_content="<p>${tianqi}+${zhufu}+点赞${time}次</p>"
+              edit_content="<p>${tianqi}${zhufu}点赞${time}次</p>"
 
               response=$(curl -s -X POST https://loveyouliao.jjmc.cn/api/PortalApi/Topic/MobilePostComments \
               -H 'Content-Type: application/json' \
