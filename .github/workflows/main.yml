@@ -1,8 +1,8 @@
 name: Daily Post Comments
 
 on:
-  #schedule:
-   # - cron: '30 3 * * *'  # 每天中午 11:30（北京时间）
+  schedule:
+    - cron: '30 3 * * *'  # 每天中午 11:30（北京时间）
 
 jobs:
   post_comments:
@@ -15,22 +15,44 @@ jobs:
       - name: Read topic IDs
         id: read_topic_ids
         run: |
-          if [[ -f topic_id.properties ]]; then
-            mapfile -t topic_ids < topic_id.properties
+          if [[ -f topicList.properties ]]; then
+            mapfile -t topic_ids < topicList.properties
             echo "TOPIC_IDS=${topic_ids[*]}" >> $GITHUB_ENV
           else
-            echo "File topic_id.properties not found!"
+            echo "File topicList.properties not found!"
             exit 1
           fi
 
       - name: Read WWIDs
         id: read_wwids
         run: |
-          if [[ -f wwid_list.properties ]]; then
-            mapfile -t wwids < wwid_list.properties
+          if [[ -f wwidList.properties ]]; then
+            mapfile -t wwids < wwidList.properties
             echo "WWIDS=${wwids[*]}" >> $GITHUB_ENV
           else
-            echo "File wwid_list.properties not found!"
+            echo "File wwidList.properties not found!"
+            exit 1
+          fi
+
+      - name: Read Tianqi
+        id: read_tianqi
+        run: |
+          if [[ -f tianQiList.properties ]]; then
+            mapfile -t tianqi_list < tianQiList.properties
+            echo "TIANQI_LIST=${tianqi_list[*]}" >> $GITHUB_ENV
+          else
+            echo "File tianQiList.properties not found!"
+            exit 1
+          fi
+
+      - name: Read ZhuFu
+        id: read_zhufu
+        run: |
+          if [[ -f zhuFuList.properties ]]; then
+            mapfile -t zhufu_list < zhuFuList.properties
+            echo "ZHUFU_LIST=${zhufu_list[*]}" >> $GITHUB_ENV
+          else
+            echo "File zhuFuList.properties not found!"
             exit 1
           fi
 
@@ -38,12 +60,17 @@ jobs:
         run: |
           IFS=' ' read -r -a topic_ids <<< "$TOPIC_IDS"
           IFS=' ' read -r -a wwids <<< "$WWIDS"
+          IFS=' ' read -r -a tianqi_list <<< "$TIANQI_LIST"
+          IFS=' ' read -r -a zhufu_list <<< "$ZHUFU_LIST"
 
           for wwid in "${wwids[@]}"; do
             for topicID in "${topic_ids[@]}"; do
               time=$(shuf -i 100-1000 -n 1)  # 生成随机数字
-              content="1234567890"
-              edit_content="<p>恭喜发财，点赞${time}次</p>"
+              tianqi=${tianqi_list[$RANDOM % ${#tianqi_list[@]}]}  # 随机获取天气
+              zhufu=${zhufu_list[$RANDOM % ${#zhufu_list[@]}]}  # 随机获取祝福
+              
+              content="${tianqi}${zhufu}点赞${time}次"
+              edit_content="<p>${tianqi}${zhufu}点赞${time}次</p>"
               
               response=$(curl -s -X POST https://loveyouliao.jjmc.cn/api/PortalApi/Topic/MobilePostComments \
               -H 'Content-Type: application/json' \
@@ -53,7 +80,7 @@ jobs:
                 \"topicID\": \"$topicID\",
                 \"content\": \"$content\",
                 \"edit_Content\": \"$edit_content\",
-                \"is_anonymous\": \"1\"
+                \"is_anonymous\": \"2\"
               }")
               
               echo "Response for topicID $topicID and wwid $wwid: $response"
