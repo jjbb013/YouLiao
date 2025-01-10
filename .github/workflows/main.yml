@@ -2,7 +2,7 @@ name: Daily Post Comments
 
 on:
   schedule:
-    - cron: '30 3 * * *'  # 每天中午 11:30（北京时间）
+    - cron: '30 4 * * *'  # 每天中午 12:30（北京时间，如果GitHub服务器在UTC+0时区，故使用UTC+4）
   workflow_dispatch:
 
 jobs:
@@ -13,7 +13,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v2
 
-      - name: Read topic IDs
+      - name: Read Topic IDs
         id: read_topic_ids
         run: |
           if [[ -f topicList.properties ]]; then
@@ -29,7 +29,10 @@ jobs:
         run: |
           if [[ -f wwidList.properties ]]; then
             mapfile -t wwids < wwidList.properties
-            echo "WWIDS=${wwids[*]}" >> $GITHUB_ENV
+            # 随机选择 100 个 wwid
+            shuf -n 100 wwidList.properties > selected_wwids.txt
+            mapfile -t selected_wwids < selected_wwids.txt
+            echo "WWIDS=${selected_wwids[*]}" >> $GITHUB_ENV
           else
             echo "File wwidList.properties not found!"
             exit 1
@@ -64,15 +67,16 @@ jobs:
           IFS=' ' read -r -a tianqi_list <<< "$TIANQI_LIST"
           IFS=' ' read -r -a zhufu_list <<< "$ZHUFU_LIST"
 
-          for wwid in "${wwids[@]}"; do
-            for topicID in "${topic_ids[@]}"; do
+          for topicID in "${topic_ids[@]}"; do
+            for _ in {1..100}; do
+              wwid=${wwids[$RANDOM % ${#wwids[@]}]}  # 随机获取 wwid
               time=$(shuf -i 100-1000 -n 1)  # 生成随机数字
               tianqi=${tianqi_list[$RANDOM % ${#tianqi_list[@]}]}  # 随机获取天气
               zhufu=${zhufu_list[$RANDOM % ${#zhufu_list[@]}]}  # 随机获取祝福
-              
+
               content="${tianqi}${zhufu}点赞${time}次"
-              edit_content="<p>${tianqi}${zhufu}点赞${time}次</p>"
-              
+              edit_content="<p>${tianqi}+${zhufu}+点赞${time}次</p>"
+
               response=$(curl -s -X POST https://loveyouliao.jjmc.cn/api/PortalApi/Topic/MobilePostComments \
               -H 'Content-Type: application/json' \
               -d "{
@@ -83,7 +87,7 @@ jobs:
                 \"edit_Content\": \"$edit_content\",
                 \"is_anonymous\": \"2\"
               }")
-              
+
               echo "Response for topicID $topicID and wwid $wwid: $response"
               sleep 10  # 等待10秒再发送下一个请求
             done
