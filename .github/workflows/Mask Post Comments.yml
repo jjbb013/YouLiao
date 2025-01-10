@@ -32,8 +32,8 @@ jobs:
         run: |
           if [[ -f wwidList.properties ]]; then
             mapfile -t wwids < wwidList.properties
-            # 随机选择 25 个 wwid
-            shuf -n 25 wwidList.properties > selected_wwids.txt
+            # 随机选择 50 个 wwid
+            shuf -n 50 wwidList.properties > selected_wwids.txt
             mapfile -t selected_wwids < selected_wwids.txt
             echo "WWIDS=${selected_wwids[*]}" >> $GITHUB_ENV
           else
