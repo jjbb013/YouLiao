@@ -3,7 +3,8 @@ name: Daily YouLiao Sign In
 on:
   schedule:
     - cron: '0 0 8 * *'  # 每天在 UTC 时间08:00（北京时间16:00）
-
+  workflow_dispatch:
+  
 jobs:
   post_request:
     runs-on: ubuntu-latest
