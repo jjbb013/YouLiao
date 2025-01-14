@@ -1,0 +1,34 @@
+name: Read News
+
+on:
+  schedule:
+    - cron: '0 1 9 * *'  # 每天 UTC 时间 1 点（北京时间09:00）
+  workflow_dispatch:
+  
+jobs:
+  post_request:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Make POST request
+        id: post_request
+        run: |
+          response=$(curl -s -X POST https://loveyouliao.jjmc.cn/api/PortalApi/Personal/GetAllChannelMessage \
+          -H "User-Agent: EmployeePortal/3.4.14 CFNetwork/1568.300.101 Darwin/24.2.0" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "wwid":"152836434",
+            "position":"2",
+            "type":"1",
+            "modelType":"0",
+            "pageIndex":"0",
+            "pageSize":"20"
+          }')
+          
+          # 提取 data 中的 modelType 值并保存到列表
+          model_types=$(echo "${response}" | jq -r '.data[].modelType')
+          
+          # 打印 modelType 列表
+          echo "Model Types: "
+          for type in $model_types; do
+            echo "$type"
+          done
