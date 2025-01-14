@@ -1,0 +1,25 @@
+name: Daily YouLiao Sign In
+
+on:
+  schedule:
+    - cron: '0 0 8 * *'  # 每天在 UTC 时间08:00（北京时间16:00）
+
+jobs:
+  post_request:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v2
+
+      - name: Read WWID from properties file
+        id: read_wwid
+        run: |
+          # 读取 OurWWID.properties 文件中的 WWID
+          WWID=$(grep 'WWID' OurWWID.properties | cut -d'=' -f2 | tr -d '[:space:]')
+          echo "WWID=${WWID}" >> $GITHUB_ENV
+
+      - name: Make POST request
+        run: |
+          curl -X POST https://loveyouliao.jjmc.cn/api/PortalApi/Personal/UserSign \
+          -H "Content-Type: application/json" \
+          -d "{\"WWID\":\"${{ env.WWID }}\"}"
