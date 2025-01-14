@@ -1,26 +1,41 @@
-name: Daily YouLiao Sign In
+name: YouLiao Sign In
 
 on:
   schedule:
-    - cron: '0 0 8 * *'  # 每天在 UTC 时间08:00（北京时间16:00）
-  workflow_dispatch:
-  
+    - cron: '0 0 8 * *'  # 每天 UTC 时间 0 点（北京时间08:00）
+  workflow_dispatch:  # 允许手动触发工作流
+
 jobs:
   post_request:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout the repository
+      - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Read WWID from properties file
+      - name: Read WWIDs from properties file
         id: read_wwid
         run: |
           # 读取 OurWWID.properties 文件中的 WWID
-          WWID=$(grep 'WWID' OurWWID.properties | cut -d'=' -f2 | tr -d '[:space:]')
-          echo "WWID=${WWID}" >> $GITHUB_ENV
+          WWIDs=()
+          while IFS='=' read -r key value; do
+            if [[ $key == "WWID" ]]; then
+              WWIDs+=("$value")
+            fi
+          done < OurWWID.properties
+          
+          # 打印读取的 WWID
+          echo "WWIDs: ${WWIDs[@]}"
+          
+          # 将 WWIDs 保存为输出值，供后续步骤使用
+          echo "wwids=${WWIDs[@]}" >> $GITHUB_ENV
 
-      - name: Make POST request
+      - name: Make POST requests for each WWID
         run: |
-          curl -X POST https://loveyouliao.jjmc.cn/api/PortalApi/Personal/UserSign \
-          -H "Content-Type: application/json" \
-          -d "{\"WWID\":\"${{ env.WWID }}\"}"
+          IFS=' ' read -r -a wwid_array <<< "${{ env.wwids }}"
+          for wwid in "${wwid_array[@]}"; do
+            response=$(curl -s -X POST https://loveyouliao.jjmc.cn/api/PortalApi/Personal/UserSign \
+            -H "Content-Type: application/json" \
+            -d "{\"WWID\":\"${wwid}\"}")
+            
+            echo "Response for WWID ${wwid}: ${response}"
+          done
