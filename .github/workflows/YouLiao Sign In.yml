@@ -13,25 +13,25 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Read WWIDs from properties file
-        id: read_wwid
+        id: read_wwids
         run: |
-          # 读取 OurWWID.properties 文件中的 WWID
-          WWIDs=()
-          while IFS='=' read -r key value; do
-            if [[ $key == "WWID" ]]; then
-              WWIDs+=("$value")
-            fi
-          done < OurWWID.properties
-          
-          # 打印读取的 WWID
-          echo "WWIDs: ${WWIDs[@]}"
-          
-          # 将 WWIDs 保存为输出值，供后续步骤使用
-          echo "wwids=${WWIDs[@]}" >> $GITHUB_ENV
+          if [[ -f OurWWID.properties ]]; then
+            # 将文件中的行读取到数组中
+            mapfile -t wwid_array < OurWWID.properties
+            
+            # 打印读取到的 WWID 列表
+            echo "Read WWIDs: ${wwid_array[*]}"
+            
+            # 保存 WWIDs 到环境变量
+            echo "WWIDs=${wwid_array[*]}" >> $GITHUB_ENV
+          else
+            echo "File OurWWID.properties not found!"
+            exit 1
+          fi
 
       - name: Make POST requests for each WWID
         run: |
-          IFS=' ' read -r -a wwid_array <<< "${{ env.wwids }}"
+          IFS=' ' read -r -a wwid_array <<< "${{ env.WWIDs }}"
           for wwid in "${wwid_array[@]}"; do
             response=$(curl -s -X POST https://loveyouliao.jjmc.cn/api/PortalApi/Personal/UserSign \
             -H "Content-Type: application/json" \
