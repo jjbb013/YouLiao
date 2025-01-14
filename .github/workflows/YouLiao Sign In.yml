@@ -34,8 +34,9 @@ jobs:
           IFS=' ' read -r -a wwid_array <<< "${{ env.WWIDs }}"
           for wwid in "${wwid_array[@]}"; do
             response=$(curl -s -X POST https://loveyouliao.jjmc.cn/api/PortalApi/Personal/UserSign \
+            -H "User-Agent: EmployeePortal/3.4.14 CFNetwork/1568.300.101 Darwin/24.2.0" \
             -H "Content-Type: application/json" \
             -d "{\"WWID\":\"${wwid}\"}")
-            
+
             echo "Response for WWID ${wwid}: ${response}"
           done
