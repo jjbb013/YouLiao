@@ -2,7 +2,7 @@ name: YouLiao Sign In
 
 on:
   schedule:
-    - cron: '15 5 * * *'  # 每天 UTC 时间 0 点（北京时间08:00）
+    - cron: '5 10 * * *'  # 每天（北京时间6:05）
   workflow_dispatch:  # 允许手动触发工作流
 
 jobs:
