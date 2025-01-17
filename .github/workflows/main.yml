@@ -1,8 +1,8 @@
 name: Daily Post Comments
 
 on:
-  schedule:
-    - cron: '30 4 * * *'  # 每天中午 12:30（北京时间，如果GitHub服务器在UTC+0时区，故使用UTC+4）
+  #schedule:
+  #  - cron: '30 4 * * *'  # 每天中午 12:30（北京时间，如果GitHub服务器在UTC+0时区，故使用UTC+4）
   workflow_dispatch:
 
 jobs:
